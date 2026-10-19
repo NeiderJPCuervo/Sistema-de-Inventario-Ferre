@@ -1,0 +1,13 @@
+# IDE (PyCharm / VS Code)
+.idea/
+.vscode/
+
+# Base de datos local: la aplicación la crea al iniciar
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/

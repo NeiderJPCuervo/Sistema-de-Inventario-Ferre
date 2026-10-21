@@ -1,167 +1,73 @@
-# 🔧 Ferretería — Sistema de Gestión
+# Ferretería — Sistema de gestión de inventario y ventas
 
-> Sistema de escritorio para gestionar productos, inventario y ventas de una ferretería.  
-> Disponible en **dos interfaces gráficas**: Tkinter (incluida en Python) y PyQt6 (moderna y estilizada).
+Aplicación de escritorio en **Python + Tkinter + SQLite** para gestionar los productos, el inventario y las ventas de una ferretería pequeña o mediana. Incluye además una versión de consola con los módulos de productos, categorías, inventario y reportes.
 
----
+## Funcionalidades
 
-## 📸 Módulos del sistema
+Versión de escritorio (`ferreteria_gui.py`), organizada en 5 módulos con una barra lateral:
 
-| Módulo | Ícono | Acceso | Descripción |
-|--------|-------|--------|-------------|
-| Productos | 📦 | Admin | Registrar, buscar y editar precios del catálogo |
-| Categorías | ⚙ | Admin | Organizar productos por familia o tipo |
-| Inventario | 🗂 | Admin / Vendedor | Ver stock, alertas de reposición y valor total |
-| Ventas | 🧾 | Admin / Vendedor | Carrito de compra, confirmar venta, historial |
-| Reportes | 📊 | Admin | KPIs, productos críticos, valor por categoría |
-| Usuarios | 👤 | Admin | Crear, activar/desactivar y cambiar contraseñas |
+| Módulo | Qué hace |
+|---|---|
+| Productos | Registra productos con código único, los busca, edita precios de compra y venta, y agrega stock |
+| Categorías | Crea y lista las familias de productos (por ejemplo, Plomería o Eléctrico) |
+| Inventario | Muestra el inventario completo, las alertas de productos en su stock mínimo o por debajo, y el valor del inventario |
+| Ventas | Carrito de compra con validación de stock, confirmación de la venta con número correlativo (V-00001, V-00002…) e historial con el detalle de cada venta |
+| Reportes | Resumen con indicadores del negocio, productos por categoría, valor por categoría y productos críticos que hay que reponer |
 
----
+El resumen de reportes muestra el total de productos y categorías, cuántos productos están en alerta o sin stock, y el valor del inventario a precio de costo y a precio de venta.
 
-## 🔐 Roles de usuario
+## Decisiones técnicas
 
-```
-admin     →  Acceso completo a todos los módulos
-vendedor  →  Solo Ventas + Inventario (lectura)
-```
+- **La venta es una transacción.** Al confirmar se generan el número de venta, la cabecera, el detalle y el descuento de stock de cada producto; si algo falla se hace `rollback` y el inventario queda como estaba.
+- **El carrito valida el stock antes de agregar.** Cuenta también las unidades de ese producto que ya están en el carrito, para no vender más de lo que hay en bodega.
+- **Interfaz adaptable a la pantalla.** Al iniciar se calcula un factor de escala a partir del DPI del monitor, y fuentes, márgenes y botones crecen con él. La barra lateral se puede colapsar.
+- **La base de datos se crea sola.** Las tablas se crean con `CREATE TABLE IF NOT EXISTS` al iniciar, así que no hace falta ningún script de instalación.
 
-Las contraseñas se almacenan cifradas con **SHA-256**.  
-Cuentas por defecto al iniciar por primera vez:
+## Requisitos
 
-```
-usuario: admin      contraseña: admin123
-usuario: vendedor   contraseña: vend123
-```
-
----
-
-## 🖥️ Interfaces gráficas
-
-### Versión Tkinter — `ferreteria_gui.py`
-- Usa la librería **Tkinter**, que viene **incluida con Python** — no requiere instalación extra
-- Tema naranja y gris oscuro
-- Sidebar colapsable con botón ☰ / ✕
-- Ventana adaptable al DPI y tamaño de fuente del sistema
-
-### Versión PyQt6 — `ferreteria_qt.py`
-- Usa **PyQt6**, interfaz más moderna con estilo Fusion
-- Splitter redimensionable en el módulo de ventas
-- Misma funcionalidad que la versión Tkinter
-- Requiere instalación (ver dependencias)
-
----
-
-## ⚙️ Tecnologías utilizadas
-
-| Tecnología | Versión recomendada | Uso |
-|------------|-------------------|-----|
-| Python | 3.10 o superior | Lenguaje principal |
-| Tkinter | Incluida en Python | Interfaz versión GUI clásica |
-| PyQt6 | 6.x | Interfaz versión GUI moderna |
-| SQLite3 | Incluida en Python | Base de datos local |
-| hashlib | Incluida en Python | Cifrado SHA-256 de contraseñas |
-| datetime | Incluida en Python | Fechas y horas en ventas |
-
----
-
-## 📦 Dependencias a instalar
-
-### Para la versión Tkinter (`ferreteria_gui.py`)
-
-En **Windows y macOS** Tkinter ya viene instalado con Python.  
-En **Linux** puede ser necesario instalarlo:
+- Python 3.10 o superior.
+- Tkinter y SQLite vienen incluidos con Python en Windows y macOS. En Linux puede que haya que instalar Tkinter:
 
 ```bash
-# Ubuntu / Debian
 sudo apt install python3-tk
-
-# Fedora
-sudo dnf install python3-tkinter
-
-# Arch Linux
-sudo pacman -S tk
 ```
 
-Verifica que funcione:
-```bash
-python3 -c "import tkinter; print('Tkinter OK ✔')"
-```
+(En Fedora es `python3-tkinter` y en Arch, `tk`.)
 
----
-
-### Para la versión PyQt6 (`ferreteria_qt.py`)
+- La versión de consola usa dos librerías externas:
 
 ```bash
-pip install PyQt6
+pip install tabulate colorama
 ```
 
-Verifica que funcione:
-```bash
-python3 -c "from PyQt6.QtWidgets import QApplication; print('PyQt6 OK ✔')"
-```
-
----
-
-## 🚀 Cómo ejecutar
+## Cómo ejecutarlo
 
 ```bash
-# Versión Tkinter
-python ferreteria_gui.py
-
-# Versión PyQt6
-python ferreteria_qt.py
+python ferreteria_gui.py   # versión de escritorio
+python main.py             # versión de consola
 ```
 
-Ambas versiones **comparten la misma base de datos** `ferreteria.db`.  
-Si el archivo no existe, se crea automáticamente al iniciar el programa.
+Las dos versiones usan el mismo archivo `ferreteria.db` en la carpeta desde donde se ejecutan. Si no existe, se crea al iniciar.
 
----
-
-## 📁 Estructura del proyecto
+## Estructura
 
 ```
-ferreteria/
-│
-├── ferreteria_gui.py        # Interfaz Tkinter (no requiere instalación)
-├── ferreteria_qt.py         # Interfaz PyQt6   (requiere pip install PyQt6)
-├── ferreteria.db            # Base de datos SQLite (se genera automáticamente)
-└── README.md                # Este archivo
+├── ferreteria_gui.py   # versión de escritorio (Tkinter): los 5 módulos
+├── main.py             # versión de consola: productos, categorías, inventario y reportes
+├── ferreteria.db       # base de datos SQLite (se crea al iniciar si no existe)
+└── README.md
 ```
 
----
-
-## 🗂️ Estructura de la base de datos
+## Base de datos
 
 ```
-usuarios          → Cuentas de acceso con rol y contraseña cifrada
-categorias        → Familias de productos (ej: Plomería, Eléctrico)
-productos         → Catálogo con precios, stock y categoría
-ventas            → Cabecera de cada venta (número, cliente, fecha, total)
-detalle_ventas    → Ítems individuales de cada venta
+categorias       → familias de productos
+productos        → código, nombre, precios de compra y venta, stock, stock mínimo y categoría
+ventas           → número, cliente, fecha, total y estado de cada venta
+detalle_ventas   → productos, cantidades y subtotales de cada venta
 ```
 
----
+## Autor
 
-## ✅ Compatibilidad
-
-| Sistema Operativo | Tkinter | PyQt6 |
-|-------------------|---------|-------|
-| Windows 10 / 11   | ✔       | ✔     |
-| Ubuntu / Debian   | ✔ *     | ✔     |
-| Fedora / Arch     | ✔ *     | ✔     |
-| macOS             | ✔       | ✔     |
-
-`*` Requiere instalar `python3-tk` desde el gestor de paquetes del sistema.
-
----
-
-## 🛠️ Hecho con
-
-- **Python 3** — lógica del negocio y acceso a datos
-- **Tkinter** — interfaz gráfica nativa, sin dependencias externas
-- **PyQt6** — interfaz gráfica moderna con Qt Framework
-- **SQLite** — base de datos embebida, sin servidor
-
----
-
-*Proyecto académico — Sistema de gestión para ferretería pequeña o mediana.*
+**John Neider Cuervo Quintero** — estudiante de Ingeniería de Software y Datos, Medellín.
+Portafolio: [portafolio-john-cuervo.netlify.app](https://portafolio-john-cuervo.netlify.app/)
